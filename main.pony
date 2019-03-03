@@ -29,7 +29,14 @@ actor ChatRoom
 
   be dispose() =>
     message("server", "shutting down...")
-    remove_all()
+    _shutdown()
+
+  be _shutdown() =>
+    for conn in _conns.keys() do
+      conn.mute()
+      conn.dispose()
+    end
+    _conns.clear()
 
   be add(conn: TCPConnection, nick: Nick) =>
     _conns(conn) = nick
@@ -38,11 +45,10 @@ actor ChatRoom
     try
       let nick = _conns(conn)?
       _conns.remove(conn)?
+      conn.mute()
+      conn.dispose()
       message("server", nick + " left")
     end
-
-  be remove_all() =>
-    _conns.clear()
 
   be message(nick: Nick, msg: String) =>
     for (conn, nick') in _conns.pairs() do
@@ -75,19 +81,19 @@ class ChatConnection is TCPConnectionNotify
     _logger(Info) and _logger.log("received data from " + AddrStr(conn.remote_address()))
     match _nick
       | None =>
-        let nick: String val = String.from_iso_array(consume data).>strip()
-        _nick = nick
-        _room.add(conn, nick)
+        match String.from_iso_array(consume data).>strip()
+          | let nick: String val if nick.size() > 0 =>
+            _nick = nick
+            _room.add(conn, nick)
+        end
       | let nick: String =>
         let line: String val = String.from_iso_array(consume data).>strip()
         match line
           | "/quit" =>
-            conn.mute()
-            conn.close()
             _room.remove(conn)
             return false
           | "/time" => conn.write(PrintTime() + "\n")
-          | let msg: String =>
+          | let msg: String if msg.size() > 0 =>
             _room.message(nick, msg)
         end
     end
