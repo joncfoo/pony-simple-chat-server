@@ -19,7 +19,7 @@ actor Main
        - `/time` - the server sends the current time to the server
        - everything else is sent to all connected clients
   """
-	new create(env: Env) =>
+  new create(env: Env) =>
     let envMap = EnvVars(env.vars where prefix = "PONY_", squash = true)
     let logLevel = match envMap.get_or_else("log_level", "").lower()
     | "fine" => Fine
@@ -30,11 +30,11 @@ actor Main
       Warn
     end
 
-		let custodian = Custodian
-		let logger = StringLogger(logLevel, env.out)
+    let custodian = Custodian
+    let logger = StringLogger(logLevel, env.out)
     let room = ChatRoom
-		SignalHandler(TermHandler(custodian, logger), Sig.term())
-		SignalHandler(TermHandler(custodian, logger), Sig.int())
+    SignalHandler(TermHandler(custodian, logger), Sig.term())
+    SignalHandler(TermHandler(custodian, logger), Sig.int())
 
     try
       let server = TCPListener(
@@ -53,29 +53,29 @@ actor Main
 
 
 class TermHandler is SignalNotify
-	let _custodian: Custodian
+  let _custodian: Custodian
   let _logger: Logger[String]
 
-	new iso create(custodian: Custodian, logger: Logger[String]) =>
-		_custodian = custodian
+  new iso create(custodian: Custodian, logger: Logger[String]) =>
+    _custodian = custodian
     _logger = logger
 
-	fun ref apply(count: U32): Bool =>
+  fun ref apply(count: U32): Bool =>
     _logger(Info) and _logger.log("going now, bye!")
-		_custodian.dispose()
+    _custodian.dispose()
     // don't keep listening for signal
-		false
+    false
 
 
 primitive PrintTime
-	fun apply(): String =>
+  fun apply(): String =>
     """Returns the current time in UTC. e.g. `2019-03-04 19:26:14`"""
-		(let sec: I64, let nsec: I64) = Time.now()
-		try
-			PosixDate(sec, nsec).format("%F %T %Z")?
-		else
-			"failed to format time"
-		end
+    (let sec: I64, let nsec: I64) = Time.now()
+    try
+      PosixDate(sec, nsec).format("%F %T %Z")?
+    else
+      "failed to format time"
+    end
 
 primitive AddrStr
   fun apply(n: NetAddress val): String =>
