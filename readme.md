@@ -1,4 +1,6 @@
-A basic line-oriented chat server used as a learning example.
+A basic line-oriented chat server built atop [step 4 of the
+pony-workshop](https://github.com/aturley/pony-workshop/blob/master/steps/04/main.pony)
+used as a learning example.
 
 It features:
 - graceful shutdown of the server (triggered by sending `SIGTERM` and `SIGINT`)
@@ -20,6 +22,8 @@ It features:
 
 ## Run
 
+Note: the server listens for connections on `localhost:8989`
+
     ./main
 
 To run with various log levels:
@@ -27,3 +31,10 @@ To run with various log levels:
     PONY_LOG_LEVEL=<log-level> ./main
 
 Where `<log-level>` is one of `fine`, `info`, `warn`, `error`
+
+## Interact
+
+The easiest way to connect to the server is to use `netcat` like so:
+
+    > nc localhost 8989
+    welcome! Please enter your name:
