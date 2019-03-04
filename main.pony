@@ -8,16 +8,17 @@ use "time"
 
 
 actor Main
-  """A basic line-oriented chat server used as a learning example.
-     It features:
-     - graceful shutdown of the server (triggered by sending `SIGTERM` and `SIGINT`)
-     - logging which can be controlled via `PONY_LOG_LEVEL` environment variable
-     - requires clients to provide their names
-     - clients can send:
-       - `/quit` - terminate the client's connection to the server and announces
-         that this client has left
-       - `/time` - the server sends the current time to the server
-       - everything else is sent to all connected clients
+  """
+  A basic line-oriented chat server used as a learning example.
+  It features:
+  - graceful shutdown of the server (triggered by sending `SIGTERM` and `SIGINT`)
+  - logging which can be controlled via `PONY_LOG_LEVEL` environment variable
+  - requires clients to provide their names
+  - clients can send:
+    - `/quit` - terminate the client's connection to the server and announces
+      that this client has left
+    - `/time` - the server sends the current time to the server
+    - everything else is sent to all connected clients
   """
   new create(env: Env) =>
     let envMap = EnvVars(env.vars where prefix = "PONY_", squash = true)
@@ -162,7 +163,9 @@ class ChatConnection is TCPConnectionNotify
 
   fun ref closed(conn: TCPConnection ref): None val =>
     _logger(Info) and _logger.log("client closed connection")
-    _room.remove(conn)
+    match _nick
+    | let _: String => _room.remove(conn)
+    end
     None
 
 
